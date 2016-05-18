@@ -1,0 +1,16 @@
+inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	-1.00	-1.00	-2.20	-0.50
+inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	-1.00	-1.00	-0.20	-1.00
+inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	-2.20	-0.50	-1.00	-0.50
+inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	inf	-0.30	-1.00	-0.30	-2.00
+inf	inf	inf	inf	inf	inf	inf	inf	-1.50	-1.50	-2.70	-1.90	inf	inf	inf	inf
+inf	inf	inf	inf	inf	inf	inf	inf	-1.50	-1.50	-1.00	-1.50	inf	inf	inf	inf
+inf	inf	inf	inf	inf	inf	inf	inf	-2.70	-1.90	-1.50	-1.90	inf	inf	inf	inf
+inf	inf	inf	inf	inf	inf	inf	inf	-1.40	-1.50	-1.40	-2.50	inf	inf	inf	inf
+inf	inf	inf	inf	-1.50	-1.50	-2.70	-1.30	inf	inf	inf	inf	-1.50	-1.50	-2.70	-1.30
+inf	inf	inf	inf	-1.50	-1.50	-0.60	-1.50	inf	inf	inf	inf	-1.50	-1.50	-0.60	-1.50
+inf	inf	inf	inf	-2.70	-1.50	-1.50	-1.50	inf	inf	inf	inf	-2.70	-1.50	-1.50	-1.50
+inf	inf	inf	inf	-0.80	-1.50	-0.80	-2.50	inf	inf	inf	inf	-0.80	-1.50	-0.80	-2.50
+-1.00	-1.00	-2.20	-0.40	inf	inf	inf	inf	-1.00	-1.00	-2.20	-0.40	inf	inf	inf	inf
+-1.00	-1.00	+0.20	-1.00	inf	inf	inf	inf	-1.00	-1.00	+0.20	-1.00	inf	inf	inf	inf
+-2.20	-0.40	-1.00	-0.40	inf	inf	inf	inf	-2.20	-0.40	-1.00	-0.40	inf	inf	inf	inf
++0.20	-1.00	+0.20	-2.00	inf	inf	inf	inf	+0.20	-1.00	+0.20	-2.00	inf	inf	inf	inf

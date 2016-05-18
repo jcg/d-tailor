@@ -1,0 +1,383 @@
+TransTermHP Version 2.07
+
+CONTENTS
+    0. LICENSE & CREDITS
+    1. INSTALLATION
+    2. TRANSTERM USAGE
+    3. FORMAT OF THE TRANSTERM OUTPUT
+    4. TRANSTERM COMMAND LINE OPTIONS
+    5. RECALIBRATING USING DIFFERENT PARAMETERS
+    6. FORMAT OF THE EXPTERMS.DAT FILE
+    7. PORTING NOTES
+    8. 2NDSCORE PROGRAM
+    9. FORMAT OF .BAG FILES
+    10. USING TRANSTERM WITHOUT GENOME ANNOTATIONS
+
+0. LICENSE & CREDITS
+
+TransTermHP v. 2.0 is a complete rewrite by Carl Kingsford of TransTerm v. 1.0,
+originally written by Maria D. Ermolaeva. The first TransTermHP was described in
+the paper:
+
+ [1] Maria D. Ermolaeva, Hanif G. Khalak, Owen White, Hamilton O. Smith and
+     Steven L. Salzberg. Prediction of Transcription Terminators in Bacterial
+     Genomes. J Mol Biol 301, (1), 27-33 (2000)
+
+TransTermHP v 2.0 is free software and is distributed under the GNU Public
+License. See the file LICENSE.txt included with TransTermHP for complete
+details.
+
+
+1. INSTALLATION
+
+At present, TransTermHP has only been tested on UNIX-like systems with the
+GCC/G++ compiler. To compile TransTermHP on such a system, "cd" into the
+TransTermHP src directory, and type:
+
+    make clean transterm
+
+If there are no errors reported, there should be a "transterm" executable file
+in the same directory. You can move this executable anyplace that is
+convenient. To save space, you can type:
+
+    make no_obj
+
+to remove all the .o files that were created during compilation.
+
+If you want to use TransTermHP on a non-UNIX-like system, see 'PORTING NOTES'
+below for some tips.
+
+
+2. TRANSTERM USAGE
+
+The standard usage of TransTermHP is:
+
+    transterm -p expterm.dat seq.fasta annotation.ptt > output.tt
+
+Any number of fasta and annotation files can be listed but fasta files should
+come before annotation files. The type of the file is determined by the
+extension:
+
+    .ptt               a GenBank ptt annotation file
+    .coords or .crd    a simple annotation file
+
+Each line of a .coords or .crd file has the format:
+
+    gene_name  start  end  chrom_id
+
+The chrom_id specifies which sequence the annotation should apply to. For a
+.ptt file, the chrom_id is taken to be the filename with the path and
+extension removed. A filename with any other extension is assumed to be a
+fasta file. 
+
+When processing an annotation for a chromosom with id = ID, the first word of
+the '>' lines of the input sequences are searched for ID.  Because there is no
+good standard for how the '>' line is formated, several heuristics are tried
+to find ID in the '>' line. In the order tried, they are:
+
+    >ID
+    >junk|cmr:ID|junk or junk|ID|junk
+    >junk|gi|ID|junk or >junk|gi|ID.junk|junk
+    >junk:ID
+
+The option '-p expterm.dat' uses the newest confidence scheme, where
+expterm.dat is the path to the file of that name supplied with TransTermHP. If
+'-p expterm.dat' is omited, the version 1.0 confidence scheme is used. See
+section 'COMMAND LINE OPTIONS' for more detail.
+
+
+3. FORMAT OF THE TRANSTERM OUTPUT
+
+The organism's genes are listed sorted by their end coordinate and terminators
+are output between them. A terminator entry looks like this:
+
+    TERM 19  15310 - 15327  -      F     99      -12.7 -4.0 |bidir
+    (name)   (start - end)  (sense)(loc) (conf) (hp) (tail) (notes)
+
+where 'conf' is the overall confidence score, 'hp' is the hairpin score, and
+'tail' is the tail score. 'Conf' (which ranges from 0 to 100) is what you
+probably want to use to assess the quality of a terminator. Higher is better.
+The confidence, hp score, and tail scores are described in the paper cited
+above.  'Loc' gives type of region the terminator is in:
+
+    'G' = in the interior of a gene (at least 50bp from an end),
+    'F' = between two +strand genes,
+    'R' = between two -strand genes,
+    'T' = between the ends of a +strand gene and a -strand gene,
+    'H' = between the starts of a +strand gene and a -strand gene,
+    'N' = none of the above (for the start and end of the DNA)
+
+Because of how overlapping genes are handled, these designations are not
+exclusive. 'G', 'F', or 'R' can also be given in lowercase, indicating that
+the terminator is on the opposite strand as the region.  Unless the
+--all-context option is given, only candidate terminators that appear to be in
+an appropriate genome context (e.g. T, F, R) are output. 
+
+Following the TERM line is the sequence of the hairpin and the 5' and 3'
+tails, always written 5' to 3'.
+
+
+4. TRANSTERM COMMAND LINE OPTIONS
+
+You can also set how large a hairpin must be to be considered:
+
+    --min-stem=n    Stem must be n nucleotides long
+    --min-loop=n    Loop portion of the hairpin must be at least n long
+
+You can also set the maximum size of the hairpin that will be found:
+
+    --max-len=n     Total extent of hairpin <= n NT long
+    --max-loop=n    The loop portion can be no longer than n
+
+The maximum length is the total length for the hairpin portion (2 stems, 1
+loop) and does not include the U-tail. It's measured in nuceotides in the
+input sequence, so because of gaps, the actual structure may be longer than
+max-len.  Max-len must be less than the compiled-in constant REALLY_MAX_UP
+(which by default is 1000). To increase the size of structures found recompile
+after increasing this constant.
+
+TransTermHP assigns a score to the hairpin and tail portions of potential
+terminators. Lower scores are considered better. Many of the constants used in
+scoring hairpins can be set from the command line:
+
+    --gc=f       Score of a G-C pair
+    --au=f       Score of an A-U pair
+    --gu=f       Score of a G-U pair
+    --mm=f       Score of any other pair
+    --gap=f      Score of a gap in the hairpin
+
+The cost of loops of various lengths can be set using:
+
+    --loop-penalty=f1,f2,f3,f4,f5,...fn
+
+where f1 is the cost of a loop of length --min-loop, f2 is the cost of a loop
+of length --min-loop+1, as so on. If there are too few terms to cover up to
+max-loop, the last term is repeated. Thus --loop-penalty=0,2 would assign cost
+0 to any loop of length min-loop, and 2 to any longer loop (up to max-loop,
+after which longer loops are given infinite scores). Extra terms are ignored.
+
+Note that if you are using the --pval-conf confidence scheme (see below), you
+must regenerate the expterm.dat file if you change any of the above constants.
+
+To weed out any potential terminator with tail or hairpin scores that are too
+large, you can use the following options:
+
+    --max-hp-score=f    Maximum allowable hairpin score
+    --max-tail-score=f  Maximum allowable tail score
+
+Terminator hairpins must be adjacent to a "U-rich" region. You can adjust the
+constants the define what constitutes a U-rich region. Using the options:
+
+    --uwin-size=s
+    --uwin-require=r
+
+requires that there are at least r 'U' nucleotides in the s-nucleotide-long
+window adjacent to the hairpin. Again, if you change these constants, you
+should regenerate expterms.dat.
+
+Before the main output, TransTermHP will output the values of the above options
+in a format suitable to be used on the command line.
+
+In addition to the tail and hairpin scores, each possible terminator is
+assigned a confidence --- a value between 0 and 100 that indicates how likely
+it is that the sequence is a terminator. The scoring scheme needs a background
+file (supplied with TransTermHP) that is specified using:
+
+    --pval-conf expterms.dat
+
+This will use the distribution in the file expterms.dat as the background. (You can
+abreivate this as "-p expterms.dat".) Though the supplied expterms.dat file is
+derived from random sequences, any background distribution can be used by
+supplying your own expterms.dat file.  See below for the format of
+expterms.dat.  The values in expterms.dat depend on the scoring constants,
+definition of u-rich regions, and the maximum allowed tail and hp scores.
+Thus, if you change any of these constants using the options above, you should
+regenerate expterms.dat.
+ 
+The main output of TransTermHP is a list of terminators interleaved between a
+listing of the gene annotations that were provided as input. This output can
+be customized in a few ways:
+
+    -S              Don't output the terminator sequences
+    --min-conf=n    Only output terminators with confidence >= n (can
+                    abbreviate this as -c n; default is 76.)
+
+Additional analysis output can be obtained with the following options:
+
+    --bag-output file.bag  Output the Best terminator After Gene
+    --t2t-perf file.t2t    Output a summary of which tail-to-tail regions
+                           have good terminators 
+
+
+5. RECALIBRATING USING DIFFERENT PARAMETERS
+
+As mentioned above, if you change any of the basic scoring function and search
+parameters and are using the version 2.0 confidence scheme (recommended) then
+you have to recompute the values in the expterm.dat file. If you have python
+installed this is easy (though perhaps time consuming). You can issue the
+command:
+    
+    % calibrate.sh newexpterms.dat [OPTIONS TO TRANSTERM]
+
+where "[OPTIONS TO TRANSTERM]" are TransTermHP options (discussed above) that
+set the parameters to what you want them to be. After calibrate.sh finishes,
+newexpterms.dat will be in the current directory and can serve as an argument
+to -p when using the same parameters you passed to calibrate.sh. 
+
+Note that for the newexpterms.dat to be valid, you must supply the same basic
+parameters to TransTermHP on subsequent runs. TransTerm (or newexpterms.dat)
+will not remember these parameters for you. The best way to handle this is to
+make a shell script wrapper around transterm that always passes in your new
+parameters.
+
+Output formating parameters do not require regeneration of expterms.dat ---
+see discussion above for which parameters expterm.dat depends on.
+
+
+6. FORMAT OF THE EXPTERMS.DAT FILE
+
+The 'pval-conf' confidence scheme, selected with the option "--pval-conf
+expterms.dat" (or '-p expterms.dat') computes the confidence of a terminator
+with HP energy E and tail energy T as follows.  First, the ranges of HP
+energies and tail energies are evenly divided into bins, and the appropriate
+bins e and t are found for E and T. Then the confidence is computed as
+described in [2].
+
+The first line of expterms.dat contains 6 numbers:
+
+   seqlen  num_bins  
+
+The (low_hp, high_hp) and (low_tail, high_tail) ranges give the bounds on the
+hairpin and tail scores. The integer num_bins gives the number of
+equally-sized bins into which those ranges are divided. Seqlen gives the
+length of the random sequence that was used to generate the data in the rest
+of the file.
+
+Following this line are any number of (at, R, M) triples, where 'at' is the AT
+content, R is a 4-tuple (low_hp, high_hp, low_tail, high_tail) giving the
+range of the HP and tail scores observed in random sequences of this AT
+content, and M is the distribution matrix.  These (at, R, M) triples are
+formated as follows:
+
+   at  low_hp  high_hp  low_tail  high_tail
+   n11 n12 n13 n14 ... n1,num_bins
+   n21  ...
+   ...
+   n_num_bins,1 ...
+
+The mu_r(e,t) term is computed by selecting the matrix with the at value
+closest to the computed %AT of the region r. If the total length of region r
+sequence is L_r, then
+
+  mu_r(e,t) = n_t_e * L_r/seqlen
+
+where n_t_e is the entry in the t-th row and e-th column of the selected
+matrix, and seqlen is the first number in the first line of the file.
+
+
+7. PORTING NOTES
+
+If you want to run TransTermHP on a non-UNIX-like system, you should take note
+of the following:
+
+* gene-reader.cc assumes that the filename extension separators is "." and the
+  path separator is "/".
+
+* getopt_long() is used to process the command line arguments.
+
+
+8. 2NDSCORE PROGRAM
+
+The package also comes with a program '2ndscore' which will find the best
+hairpin anchored at each position. The basic usage is:
+
+    2ndscore in.fasta > out.hairpins
+
+For every position in the sequence this will output a line:
+
+   -0.6  52 ..  62      TTCCTAAAGGTTCCA  GCG CAAAA TGC  CATAAGCACCACATT
+ (score) (start .. end) (left context)   (hairpin)      (right contenxt)
+
+For positions near the ends of the sequences, the context may be padded with
+'x' characters. If no hairpin can be found, the score will be 'None'.
+
+Multiple fasta files can be given and multiple sequences can be in each fasta
+file. The output for each sequence will be separated by a line starting with
+'>' and containing the FASTA description of the sequence.
+
+Because the hairpin scores of the plus-strand and minus-strand may differ (due
+to GU binding in RNA), by default 2ndscore outputs two sets of hairpins for
+every sequence: the FORWARD hairpins and the REVERSE hairpins. All the forward
+hairpins are output first, and are identified by having the word 'FORWARD' at
+the end of the '>' line preceding them. Similarly, the REVERSE hairpins are
+listed after a '>' line ending with 'REVERSE'. If you want to search only one
+or the other strand, you can use:
+
+    --no-fwd    Don't print the FORWARD hairpins
+    --no-rvs    Don't print the REVERSE hairpins
+
+You can set the energy function used, just as with transterm with the --gc,
+--au, --gu, --mm, --gap options. The --min-loop, --max-loop, and --max-len
+options are also supported.
+
+9. FORMAT OF THE .BAG FILES
+
+The columns for the .bag files are, in order:
+
+	1. gene_name	
+	2. terminator_start
+	3. terminator_end
+	4. hairpin_score
+	5. tail_score	
+	6. terminator_sequence
+
+    7. terminator_confidence: a combination of the hairpin and tail score that
+       takes into account how likely such scores are in a random sequence. This
+       is the main "score" for the terminator and is computed as described in
+       the paper.
+
+    8. APPROXIMATE_distance_from_end_of_gene: The *approximate* number of base
+       pairs between the end of the gene and the start of the terminator. This
+       is approximate in several ways: First, (and most important) TransTermHP
+       doesn't always use the real gene ends. Depending on the options you give
+       it may trim some off the ends of genes to handle terminators that
+       partially overlap with genes. Second, where the terminator "begins"
+       isn't that well defined.  This field is intended only for a sanity check
+       (terminators reported to be the best near the ends of genes shouldn't be
+       _too far_ from the end of the gene).
+
+
+10. USING TRANSTERM WITHOUT GENOME ANNOTATIONS
+
+TransTermHP uses known gene information for only 3 things: (1) tagging the
+putative terminators as either "inside genes" or "intergenic," (2) choosing the
+background GC-content percentage to compute the scores, because genes often
+have different GC content than the intergenic regions, and (3) producing
+slightly more readable output. Items (1) and (3) are not really necessary, and
+(2) has no effect if your genes have about the same GC-content as your
+intergenic regions.
+
+Unfortunately, TransTermHP doesn't yet have a simple option to run without an
+annotation file (either .ptt or .coords), and requires at least 2 genes to be
+present. The solution is to create fake, small genes that flank each
+chromosome. To do this, make a fake.coords file that contains only these two
+lines:
+
+	fakegene1	1 2	chome_id
+	fakegene2	L-1 L	chrom_id
+
+where L is the length of the input sequence and L-1 is 1 less than the length
+of the input sequence. "chrom_id" should be the word directly following the ">"
+in the .fasta file containing your sequence. (If, for example, your .fasta file
+began with ">seq1", then chrom_id = seq1).
+
+This creates a "fake" annotation with two 1-base-long genes flanking the
+sequence in a tail-to-tail arrangement: --> <--. TransTermHP can then be run
+with:
+
+	transterm -p expterm.dat sequence.fasta fake.coords
+
+If the G/C content of your intergenic regions is about the same as your genes,
+then this won't have too much of an effect on the scores terminators receive.
+On the other hand, this use of TransTermHP hasn't been tested much at all, so
+it's hard to vouch for its accuracy.

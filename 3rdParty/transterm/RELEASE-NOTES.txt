@@ -1,0 +1,17 @@
+Version 2.07 (Released on Jan. 21, 2008)
+    - Fixed bug that causes -max-loop option to not be recognized    
+    - Added format of the .bag file to USAGE.txt
+    - Added description of "hack" to handle non-annotated sequence to USAGE.txt
+
+Release history not available for versions 2.01 through 2.06
+
+Version 2.0 BETA
+    - first released version of C++ rewrite 
+    - new confidence scheme
+    - more informative output
+    - better handling of overlapping genes and terminators
+    - over 10x faster
+    - more general model for gaps in hairpins
+    
+    Known issues:
+    - finding antiterminators does not work

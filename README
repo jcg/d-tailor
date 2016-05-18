@@ -1,0 +1,31 @@
+D-Tailor v1.0
+by Joao C Guimaraes, Miguel Rocha, Adam P Arkin and Guillaume Cambray
+---------------------------------------------------------------------
+
+1. Installing D-Tailor
+
+1.1. Prerequisites
+
+D-Tailor is implemented in Python. Python is an interpreted and interactive object-oriented programming language that is available for several platforms including Unix, Mac OSX and Microsoft Windows. Before starting to use D-Tailor, you need to install Python version 2. More information can be found at http://www.python.org.
+
+D-Tailor uses a few command line utilities such as cat or awk that are commonly available for Unix or Unix-derived operating systems. When using Microsoft Windows it may be necessary to run D-Tailor in a Unix-emulation environment such as Cygwin (http://www.cygwin.com/).
+
+To have access to certain functionalities in D-Tailor, you will need to install third-party software to predict RNA structure (UNAFold v3.6 and RNAplfold v1.6) and transcription terminators (TransTermHP v2.08). The sources for these tools are located in the folder “3rdParty” and, after installation, the compiled binaries must be copied to each corresponding folder. For installation instructions, please refer to the respective websites:
+  - UNAFold — http://mfold.rna.albany.edu/?q=DINAMelt/software
+  - RNAplfold (Vienna RNA package) — http://www.tbi.univie.ac.at/~ivo/RNA/
+  - TransTermHP — http://transterm.cbcb.umd.edu/
+
+All these tools are optional and hence only necessary if the user wants to use above-mentioned functionalities, namely predict RNA structure or transcription terminators. 
+
+1.2. Installation
+
+D-Tailor is a Python project ready to be used. To start using D-Tailor, simply download it from http://genomics.lbl.gov/~jcg/dtailor/ and copy the files to the destination folder.
+
+1.3. License
+
+D-Tailor is licensed under the BSD 2-Clause License.
+
+
+2. D-Tailor tutorial
+
+For detailed documentation please see tutorial/dtailor_tutorial.PDF
