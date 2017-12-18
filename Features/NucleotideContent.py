@@ -48,10 +48,10 @@ class NucleotideContent(Feature):
     def mutate(self, operator=Functions.SimpleNtContentOperator):
         if not self.targetInstructions:
             return None
-        new_seq = operator(self.sequence, self.targetInstructions['direction'], self.nucleotides, self.mutable_region, self.cds_region, keep_aa=self.keep_aa)
+        new_seq = operator(self.solution.sequence, self.targetInstructions['direction'], self.nucleotides, self.mutable_region, self.cds_region, keep_aa=self.keep_aa)
         if not new_seq:
             return None                
-        return Solution.Solution(sol_id=str(uuid4().int), sequence=self.solution.sequence[:self.ntcontent_range[0]]+new_seq+self.solution.sequence[(self.ntcontent_range[1]+1):], cds_region = self.cds_region, mutable_region = list(self.mutable_region), parent=self.solution, design=self.solution.designMethod)
+        return Solution.Solution(sol_id=str(uuid4().int), sequence=new_seq, cds_region = self.cds_region, mutable_region = list(self.mutable_region), parent=self.solution, design=self.solution.designMethod)
 
 class NucleotideContentAT(NucleotideContent):
     """

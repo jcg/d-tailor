@@ -152,5 +152,5 @@ if __name__ == '__main__':
         #design = RandomSampling(["sd16sRNADuplexMFE","utrStructureMFE","cdsCAI"],design_param, 10)
         pass     
 
-    tfec_designer = TranslationFeaturesEcoliDesigner("tfec", seed, design, "/Users/jcg/Documents/workspace/D-Tailor/testFiles/outputFiles/tfecdb", createDB=True)
+    tfec_designer = TranslationFeaturesEcoliDesigner("tfec", seed, design, "/Users/jcg/Documents/Github-Repos/dtailor/testFiles/outputFiles/tfecdb", createDB=True)
     res = tfec_designer.run(selection="directional")
