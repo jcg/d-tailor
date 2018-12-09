@@ -103,7 +103,7 @@ class Feature(object):
                 
                 for level_name in self.solution.designMethod.thresholds[self.label+self.__class__.__name__].keys():
                     
-                    level_info = self.solution.designMethod.thresholds[self.label+self.__class__.__name__][level_name]                    
+                    level_info = self.solution.designMethod.thresholds[self.label+self.__class__.__name__][level_name]
                     
                     if self.scores[self.label+self.__class__.__name__]==None or self.scores[self.label+self.__class__.__name__]=="NA":
                         self.level = "NA"
@@ -112,7 +112,7 @@ class Feature(object):
                             self.level = level_name
                         elif level_info[1] == None and self.scores[self.label+self.__class__.__name__] >= level_info[0]: #to plus infinity
                             self.level = level_name
-                        elif level_info[0]!=None and level_info[1]!=None and round(self.scores[self.label+self.__class__.__name__],4) >= level_info[0] and round(self.scores[self.label+self.__class__.__name__],4) <= level_info[1]:                        
+                        elif level_info[0]!=None and level_info[1]!=None and round(self.scores[self.label+self.__class__.__name__],6) >= level_info[0] and round(self.scores[self.label+self.__class__.__name__],6) <= level_info[1]:                        
                             self.level = level_name
                     elif isinstance(level_info, (list,set)): #Then your level is a set of possible states
                         if self.scores[self.label+self.__class__.__name__] in level_info:
